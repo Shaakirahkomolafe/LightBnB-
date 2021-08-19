@@ -50,12 +50,6 @@ const getUserWithId = (id) => {
     });
 };
 exports.getUserWithId = getUserWithId;
-getUserWithId(1).then((result)=> {
-  console.log(result);
-  
-}) .catch((error) => {
-  console.log(error.message);
-});
 
 /**
  * Add a new user to the database.
@@ -84,9 +78,22 @@ exports.addUser = addUser;
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = (guest_id, limit = 10) => {
-  return getAllProperties(null, 2);
+  return pool
+    .query = `SELECT reservations.*, properties.* FROM reservations 
+    JOIN properties ON property_id=properties.id WHERE guest_id=$1 LIMIT $2`,[guest_id, limit]
+    .then((result) => {
+      return (result.rows);
+    }).catch((err) => {
+      return (err.message);
+    })
+  
 };
 exports.getAllReservations = getAllReservations;
+
+
+
+
+
 
 /// Properties
 
