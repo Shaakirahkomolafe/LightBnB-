@@ -1,5 +1,13 @@
 const properties = require('./json/properties.json');
 const users = require('./json/users.json');
+const { Pool } = require('pg');
+
+const pool = new Pool({
+  user: 'shakiratkomolafe',
+  password: '1234',
+  host: 'localhost',
+  database: 'lightbnb'
+});
 
 /// Users
 
@@ -8,44 +16,66 @@ const users = require('./json/users.json');
  * @param {String} email The email of the user.
  * @return {Promise<{}>} A promise to the user.
  */
-const getUserWithEmail = function(email) {
-  let user;
-  for (const userId in users) {
-    user = users[userId];
-    if (user.email.toLowerCase() === email.toLowerCase()) {
-      break;
-    } else {
-      user = null;
-    }
-  }
-  return Promise.resolve(user);
-}
-exports.getUserWithEmail = getUserWithEmail;
 
+const getUserWithEmail = (email) => {
+  return pool
+    .query(`SELECT * FROM users WHERE email = $1`, [email])
+    .then((result) => {
+      return (result.rows);
+    })
+    .catch((err) => {
+      return (err.message);
+    });
+
+};
+exports.getUserWithEmail = getUserWithEmail;
+getUserWithEmail('cadenbanks@gmx.com').then((result)=> {
+  console.log(result);
+  
+}) .catch((error) => {
+  console.log(error.message);
+});
 /**
  * Get a single user from the database given their id.
  * @param {string} id The id of the user.
  * @return {Promise<{}>} A promise to the user.
  */
-const getUserWithId = function(id) {
-  return Promise.resolve(users[id]);
-}
+const getUserWithId = (id) => {
+  return pool
+    .query(`SELECT * FROM users WHERE id = $1`, [id])
+    .then((result) => {
+      return (result.rows);
+    }).catch((err) => {
+      return (err.message);
+    });
+};
 exports.getUserWithId = getUserWithId;
-
+getUserWithId(1).then((result)=> {
+  console.log(result);
+  
+}) .catch((error) => {
+  console.log(error.message);
+});
 
 /**
  * Add a new user to the database.
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
-const addUser =  function(user) {
-  const userId = Object.keys(users).length + 1;
-  user.id = userId;
-  users[userId] = user;
-  return Promise.resolve(user);
-}
+const addUser =  (user) => {
+  const password = user.password;
+  const email = user.email;
+  const name = user.username;
+  return pool
+    .query(`INSERT INTO users (name, email, password) values($1, $2, $3)`, [name,email,password])
+    .then((result) => {
+      return (result.rows);
+    }).catch((err) => {
+      return (err.message);
+    });
+  
+};
 exports.addUser = addUser;
-
 /// Reservations
 
 /**
@@ -53,9 +83,9 @@ exports.addUser = addUser;
  * @param {string} guest_id The id of the user.
  * @return {Promise<[{}]>} A promise to the reservations.
  */
-const getAllReservations = function(guest_id, limit = 10) {
+const getAllReservations = (guest_id, limit = 10) => {
   return getAllProperties(null, 2);
-}
+};
 exports.getAllReservations = getAllReservations;
 
 /// Properties
@@ -66,14 +96,20 @@ exports.getAllReservations = getAllReservations;
  * @param {*} limit The number of results to return.
  * @return {Promise<[{}]>}  A promise to the properties.
  */
-const getAllProperties = function(options, limit = 10) {
-  const limitedProperties = {};
-  for (let i = 1; i <= limit; i++) {
-    limitedProperties[i] = properties[i];
-  }
-  return Promise.resolve(limitedProperties);
-}
+
+const getAllProperties = (options, limit = 10) => {
+  return pool
+    .query(`SELECT * FROM properties LIMIT $1`, [limit])
+    .then((result) => {
+      return (result.rows);
+    })
+    .catch((err) => {
+      return (err.message);
+    });
+};
+
 exports.getAllProperties = getAllProperties;
+
 
 
 /**
@@ -86,5 +122,5 @@ const addProperty = function(property) {
   property.id = propertyId;
   properties[propertyId] = property;
   return Promise.resolve(property);
-}
+};
 exports.addProperty = addProperty;
