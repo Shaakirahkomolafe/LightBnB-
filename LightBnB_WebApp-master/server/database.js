@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable camelcase */
 const properties = require('./json/properties.json');
 const users = require('./json/users.json');
 const { Pool } = require('pg');
@@ -80,7 +82,7 @@ const getAllReservations = (guest_id, limit = 10) => {
       return (result.rows);
     }).catch((err) => {
       return (err.message);
-    })
+    });
   
 };
 exports.getAllReservations = getAllReservations;
@@ -93,18 +95,6 @@ exports.getAllReservations = getAllReservations;
  * @param {*} limit The number of results to return.
  * @return {Promise<[{}]>}  A promise to the properties.
  */
-
-// const getAllProperties = (options, limit = 10) => {
-//   return pool
-//     .query(`SELECT * FROM properties LIMIT $1`, [limit])
-//     .then((result) => {
-//       return (result.rows);
-//     })
-//     .catch((err) => {
-//       return (err.message);
-//     });
-// };
-
 
 
 const getAllProperties = function(options, limit = 10) {
@@ -141,15 +131,15 @@ const getAllProperties = function(options, limit = 10) {
     queryString += `
     GROUP BY properties.id
     HAVING avg(property_reviews.rating) >= $${queryParams.length}`;
-  }
+  } else {
 
-  queryParams.push(limit);
-  queryString += `
+    queryParams.push(limit);
+    queryString += `
   GROUP BY properties.id
   ORDER BY cost_per_night
   LIMIT $${queryParams.length};
   `;
-
+  }
   // 5
   console.log(queryString, queryParams);
 
@@ -164,9 +154,17 @@ exports.getAllProperties = getAllProperties;
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function(property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+  return pool
+    .query = `INSERT INTO properties (owner_id,title,
+  description,thumbnail_photo_url, cover_photo_url, cost_per_night, street, city, 
+  province, post_code, country, parking_spaces, number_of_bathrooms, number_of_bedrooms)
+  values ($1,$2, $3, $4, $5, $6, $7, $8,$9, $10, $11, $12, $13, $14), 
+`, [properties.owner_id, properties.title, properties.description,properties.properties.thumbnail_photo_url, properties.cover_photo_url, properties.cost_per_night, properties.street, properties.city, properties.province, properties.post_code, properties.country, properties.parking_spaces, properties.number_of_bathrooms,properties.number_of_bedrooms]
+    .then((result) => {
+      return (result.rows);
+    }).catch((err) => {
+      return (err.message);
+    });
+  
 };
 exports.addProperty = addProperty;
